@@ -1,8 +1,11 @@
+
 #include "main_frame.h"
 #include <wx/toolbar.h>
 #include <wx/artprov.h>
 #include "map.h"
 #include "editor.h" // ✅ Include the global editor
+
+Editor editor;
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 	EVT_TOOL(TOOLBAR_WORLDGENERATOR, MainFrame::OnWorldGenerator)
