@@ -26,14 +26,9 @@ void MainFrame::OnWorldGenerator(wxCommandEvent& event) {
         int width = dialog.GetMapWidth();
         int height = dialog.GetMapHeight();
 
-        Editor* editor = Editor::getInstance(); // 🔧 Use proper singleton access
-        if (editor) {
-            Map* map = editor->getCurrentMap();
-            if (map) {
-                WorldGenerator generator;
-                generator.Generate(map, width, height);
-                Refresh();
-            }
-        }
+        Map& map = g_gui.GetCurrentEditor()->getMap();  // Get current editor safely
+        WorldGenerator generator;
+        generator.Generate(&map, width, height);
+        Refresh();
     }
 }
