@@ -3,7 +3,7 @@
 #include "ground_brush.h"
 #include "map.h"
 #include "basemap.h"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 #include <fstream>
 #include <random>
 
