@@ -3,9 +3,7 @@
 #include <wx/toolbar.h>
 #include <wx/artprov.h>
 #include "map.h"
-#include "editor.h" // ✅ Include the global editor
-
-Editor editor;
+#include "editor.h" // ✅ This gives access to g_editor
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 	EVT_TOOL(TOOLBAR_WORLDGENERATOR, MainFrame::OnWorldGenerator)
@@ -23,16 +21,23 @@ MainFrame::MainFrame()
 MainFrame::~MainFrame() {}
 
 void MainFrame::OnWorldGenerator(wxCommandEvent& event) {
-	WorldGeneratorDialog dialog(this);
-	if (dialog.ShowModal() == wxID_OK) {
-		int width = dialog.GetMapWidth();
-		int height = dialog.GetMapHeight();
-		WorldGenerator generator;
+    WorldGeneratorDialog dialog(this);
+    if (dialog.ShowModal() == wxID_OK) {
+        int width = dialog.GetMapWidth();
+        int height = dialog.GetMapHeight();
+        WorldGenerator generator;
 
-		Map* map = editor.getCurrentMap(); // ✅ Correct way to get the current map
-		if (map) {
-			generator.Generate(map, width, height);
-			Refresh(); // Redraw canvas
-		}
-	}
+        Map* map = nullptr;
+        if (g_editor) {
+            map = g_editor->getMap(); // ✅ Correct method to get current map
+        }
+
+        if (map) {
+            generator.Generate(map, width, height); // Procedural generation
+            Refresh(); // Redraw canvas
+        } else {
+            wxMessageBox("No map loaded to generate terrain into!", "Error", wxOK | wxICON_ERROR);
+        }
+    }
 }
+
