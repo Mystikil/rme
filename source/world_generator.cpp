@@ -1,51 +1,42 @@
 #include "world_generator.h"
-#include <cmath>
-#include <cstdlib>
-#include <fstream>
-#include <nlohmann/json.hpp>
 #include "tile.h"
-#include "item.h"
+#include "ground_brush.h"
+#include "map.h"
+#include "basemap.h"
+#include "json.hpp"
+#include <fstream>
+#include <random>
 
 using json = nlohmann::json;
 
-WorldGenerator::WorldGenerator() {}
-
 void WorldGenerator::Generate(Map* map, int width, int height) {
-    map->clear();
+	if (!map) return;
 
-    // Load biome config (optional)
-    json biomes;
-    std::ifstream file("data/biomes.json");
-    if (file.is_open()) {
-        file >> biomes;
-    }
+	map->clear();
 
-    for (int x = 0; x < width; ++x) {
-        for (int y = 0; y < height; ++y) {
-            float noise = PerlinNoise(x * 0.1f, y * 0.1f);
-            int tileID = GetGroundTileID(noise);
+	std::ifstream file("data/biomes.json");
+	if (!file) return;
 
-            // 🔧 Use correct constructor
-            Tile* tile = new Tile(x, y, 7);
-            tile->addItem(Item::Create(tileID));
-            map->setTile(tile->getPosition(), tile);
+	json biomes;
+	file >> biomes;
 
-            // OPTIONAL future logic: biome-based monster placement
-            /*
-            if (biomes.contains("forest") && noise > 0.5f && noise < 0.7f) {
-                // spawn monsters later via spawns tab or spawn container
-            }
-            */
-        }
-    }
-}
+	std::random_device rd;
+	std::mt19937 rng(rd());
+	std::uniform_int_distribution<> biome_dist(0, biomes.size() - 1);
 
-float WorldGenerator::PerlinNoise(float x, float y) {
-    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			Position pos(x, y, 7);
+			TileLocation* tileLoc = map->createTileL(pos);
+			Tile* tile = map->allocator(tileLoc);
 
-int WorldGenerator::GetGroundTileID(float heightValue) {
-    if (heightValue < 0.3f) return 4820; // Water
-    if (heightValue < 0.6f) return 103;  // Grass
-    return 351;                          // Mountain
+			const auto& biome = biomes[biome_dist(rng)];
+			std::string ground_str = biome["ground"];
+			GroundBrush* brush = g_brushes.getGroundBrush(ground_str);
+			if (brush) {
+				brush->draw(map, tile, nullptr);
+			}
+			map->setTile(pos, tile);
+		}
+	}
 }
