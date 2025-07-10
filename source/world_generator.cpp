@@ -10,7 +10,8 @@ void WorldGenerator::Generate(Map* map, int width, int height) {
 		for (int y = 0; y < height; ++y) {
 			float noise = PerlinNoise(x * 0.1f, y * 0.1f);
 			int tileID = GetGroundTileID(noise);
-			Tile* tile = new Tile(Position(x, y, 7)); // Default to ground level
+			
+			Tile* tile = new Tile(x, y, 7); // ✅ Fixed: no Position(), just raw coords
 			tile->addItem(Item::Create(tileID));
 			map->setTile(tile->getPosition(), tile);
 		}
