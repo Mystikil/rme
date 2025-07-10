@@ -2,6 +2,7 @@
 #include <wx/toolbar.h>
 #include <wx/artprov.h>
 #include "map.h"
+#include "editor.h" // ✅ Include the global editor
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 	EVT_TOOL(TOOLBAR_WORLDGENERATOR, MainFrame::OnWorldGenerator)
@@ -24,7 +25,11 @@ void MainFrame::OnWorldGenerator(wxCommandEvent& event) {
 		int width = dialog.GetMapWidth();
 		int height = dialog.GetMapHeight();
 		WorldGenerator generator;
-		generator.Generate(GetCurrentMap(), width, height); // Replace with actual map getter
-		Refresh(); // Redraws canvas
+
+		Map* map = editor.getCurrentMap(); // ✅ Correct way to get the current map
+		if (map) {
+			generator.Generate(map, width, height);
+			Refresh(); // Redraw canvas
+		}
 	}
 }
