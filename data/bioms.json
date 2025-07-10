@@ -1,0 +1,23 @@
+{
+  "grassland": {
+    "ground": 103,
+    "trees": [2700, 2701],
+    "decorations": [398, 399],
+    "monsters": ["rat", "wolf"]
+  },
+  "forest": {
+    "ground": 103,
+    "trees": [2700, 2702, 2703],
+    "decorations": [398, 399, 400],
+    "monsters": ["bear", "spider"]
+  },
+  "mountain": {
+    "ground": 351,
+    "decorations": [404, 405],
+    "monsters": ["orc", "troll"]
+  },
+  "water": {
+    "ground": 4820,
+    "decorations": [4821]
+  }
+}
