@@ -1,77 +1,51 @@
 #include "world_generator.h"
-#include <fstream>
-#include <nlohmann/json.hpp>
 #include <cmath>
 #include <cstdlib>
-#include <ctime>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include "tile.h"
+#include "item.h"
 
 using json = nlohmann::json;
 
-WorldGenerator::WorldGenerator() {
-	loadBiomes("data/biomes.json");
-	srand(static_cast<unsigned>(time(nullptr)));
-}
-
-void WorldGenerator::loadBiomes(const std::string& path) {
-	std::ifstream file(path);
-	if (!file.is_open()) {
-		std::cerr << "[Error] Could not open biome config: " << path << std::endl;
-		return;
-	}
-	file >> biomeData;
-}
+WorldGenerator::WorldGenerator() {}
 
 void WorldGenerator::Generate(Map* map, int width, int height) {
-	if (biomeData.empty()) {
-		std::cerr << "[Error] No biome data loaded.\n";
-		return;
-	}
+    map->clear();
 
-	map->clear(); // Clear existing map
+    // Load biome config (optional)
+    json biomes;
+    std::ifstream file("data/biomes.json");
+    if (file.is_open()) {
+        file >> biomes;
+    }
 
-	for (int x = 0; x < width; ++x) {
-		for (int y = 0; y < height; ++y) {
-			float noise = PerlinNoise(x * 0.05f, y * 0.05f);
-			std::string biome = pickBiome(noise);
-			const auto& biomeCfg = biomeData[biome];
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
+            float noise = PerlinNoise(x * 0.1f, y * 0.1f);
+            int tileID = GetGroundTileID(noise);
 
-			Tile* tile = new Tile(Position(x, y, 7)); // Default ground level
+            // 🔧 Use correct constructor
+            Tile* tile = new Tile(x, y, 7);
+            tile->addItem(Item::Create(tileID));
+            map->setTile(tile->getPosition(), tile);
 
-			// Place ground tile
-			int groundID = biomeCfg["ground"];
-			tile->addItem(Item::Create(groundID));
-
-			// Trees (10% chance)
-			if (biomeCfg.contains("trees") && rand() % 100 < 10) {
-				int treeID = biomeCfg["trees"][rand() % biomeCfg["trees"].size()];
-				tile->addItem(Item::Create(treeID));
-			}
-
-			// Decorations (15% chance)
-			if (biomeCfg.contains("decorations") && rand() % 100 < 15) {
-				int decoID = biomeCfg["decorations"][rand() % biomeCfg["decorations"].size()];
-				tile->addItem(Item::Create(decoID));
-			}
-
-			// Monsters (5% chance - stored in metadata)
-			if (biomeCfg.contains("monsters") && rand() % 100 < 5) {
-				std::string monster = biomeCfg["monsters"][rand() % biomeCfg["monsters"].size()];
-				tile->addMeta("monster", monster);
-			}
-
-			map->setTile(tile->getPosition(), tile);
-		}
-	}
+            // OPTIONAL future logic: biome-based monster placement
+            /*
+            if (biomes.contains("forest") && noise > 0.5f && noise < 0.7f) {
+                // spawn monsters later via spawns tab or spawn container
+            }
+            */
+        }
+    }
 }
 
 float WorldGenerator::PerlinNoise(float x, float y) {
-	// Placeholder: replace with real Perlin noise later
-	return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-std::string WorldGenerator::pickBiome(float noiseVal) {
-	if (noiseVal < 0.3f) return "water";
-	if (noiseVal < 0.5f) return "grassland";
-	if (noiseVal < 0.75f) return "forest";
-	return "mountain";
+int WorldGenerator::GetGroundTileID(float heightValue) {
+    if (heightValue < 0.3f) return 4820; // Water
+    if (heightValue < 0.6f) return 103;  // Grass
+    return 351;                          // Mountain
 }
