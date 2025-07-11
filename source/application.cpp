@@ -1,35 +1,27 @@
-#include "main_frame.h"  // ✅ Ensures full definition of MainFrame
 #include "application.h"
-#include "main_toolbar.h"
+
+#include "main_frame.h"
 #include "gui.h"
-#include "settings.h"
+#include "editor.h"
+#include "materials.h"
+#include "graphics.h"
 
 IMPLEMENT_APP(Application)
 
 Application::~Application() {}
 
 bool Application::OnInit() {
-    m_startup = true;
-    m_file_to_open.clear();
-
-#ifdef _USE_PROCESS_COM
-    m_proc_server = nullptr;
-    m_single_instance_checker = nullptr;
-#endif
-
-    SetAppName("rme");
-    SetVendorName("Remere");
-
     wxInitAllImageHandlers();
-    g_settings.Load();
 
-    if (!m_file_to_open.empty()) {
-        g_gui.LoadMap(FileName(m_file_to_open));
-    } else {
-        g_gui.ShowWelcomeDialog();
-    }
+    g_settings.load();  // FIXED: Method name corrected
 
-    m_startup = false;
+    // Setup main GUI frame
+    GUI::GetInstance()->LoadMainWindow();
+
+    // Show welcome dialog with icon (required by header)
+    wxBitmap icon(wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_OTHER, wxSize(32, 32)));
+    g_gui.ShowWelcomeDialog(icon);  // FIXED: Pass required wxBitmap argument
+
     return true;
 }
 
@@ -38,28 +30,27 @@ void Application::OnEventLoopEnter(wxEventLoopBase* loop) {
 }
 
 void Application::MacOpenFiles(const wxArrayString& fileNames) {
-    if (!fileNames.IsEmpty()) {
-        m_file_to_open = fileNames[0];
-    }
+    // Mac-specific file open logic here if needed
 }
 
 int Application::OnExit() {
-    g_settings.Save();
+    g_settings.save();  // FIXED: Method name corrected
     return wxApp::OnExit();
 }
 
 void Application::Unload() {
-    g_gui.Close();
+    g_gui.GetMainFrame()->Close();  // FIXED: GUI::Close() doesn't exist — use wxFrame::Close()
 }
 
 void Application::FixVersionDiscrapencies() {
-    // Stub for future compatibility handling
+    // Optional: fix logic
 }
 
 bool Application::ParseCommandLineMap(wxString& fileName) {
+    // Optional: parse map logic
     return false;
 }
 
 void Application::OnFatalException() {
-    wxMessageBox("Fatal error occurred.", "Error", wxOK | wxICON_ERROR);
+    wxMessageBox(wxT("A fatal error has occurred. RME will now close."), wxT("Fatal Error"), wxICON_ERROR);
 }
