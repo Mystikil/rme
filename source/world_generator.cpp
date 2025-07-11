@@ -32,7 +32,12 @@ void WorldGenerator::Generate(Map* map, int width, int height) {
 
 			const auto& biome = biomes[biome_dist(rng)];
 			std::string ground_str = biome["ground"];
-			GroundBrush* brush = g_brushes.getGroundBrush(ground_str);
+			Brush* genericBrush = g_brushes.getBrush(ground_str);
+			GroundBrush* brush = dynamic_cast<GroundBrush*>(genericBrush);
+			if (!brush) {
+			    std::cerr << "Warning: '" << ground_str << "' is not a valid GroundBrush." << std::endl;
+			    continue;
+			}
 			if (brush) {
 				brush->draw(map, tile, nullptr);
 			}
