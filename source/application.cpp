@@ -5,51 +5,53 @@
 #include "editor.h"
 #include "materials.h"
 #include "graphics.h"
+#include "settings.h"
+#include "version.h"
 
 IMPLEMENT_APP(Application)
 
 Application::~Application() {}
 
 bool Application::OnInit() {
-    wxInitAllImageHandlers();
+	wxInitAllImageHandlers();
 
-    g_settings.load();
+	g_settings.load();
 
-    g_gui.LoadMainWindow();
+	// Launch Main Window
+	MainFrame* frame = newd MainFrame(wxT("Remere's Map Editor"),
+		wxPoint(0, 0), wxSize(800, 600));
 
-    wxBitmap icon(wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_OTHER, wxSize(32, 32)));
-    g_gui.ShowWelcomeDialog(icon);
+	SetTopWindow(frame);
+	frame->Show(true);
 
-    return true;
+	// Load Resources
+	Editor::getInstance()->loadMap(nullptr);
+	return true;
 }
 
 void Application::OnEventLoopEnter(wxEventLoopBase* loop) {
-    wxApp::OnEventLoopEnter(loop);
-}
-
-void Application::MacOpenFiles(const wxArrayString& fileNames) {
-    // Mac-specific file open logic if needed
+	wxApp::OnEventLoopEnter(loop);
 }
 
 int Application::OnExit() {
-    g_settings.save();
-    return wxApp::OnExit();
+	g_settings.save();
+	return wxApp::OnExit();
 }
 
 void Application::Unload() {
-    if (g_gui.main_frame) {
-        g_gui.main_frame->Close();
-    }
+	if (GetTopWindow()) {
+		GetTopWindow()->Close();
+	}
 }
 
 void Application::FixVersionDiscrapencies() {
-    // Fix logic here
+	// Any migration code if needed
 }
 
 bool Application::ParseCommandLineMap(wxString& fileName) {
-    return false;
+	return false; // Not yet implemented
 }
 
 void Application::OnFatalException() {
-    wxMessageBox(wxT("A fatal error has occurred. RME will now close."), wxT("Fatal Error"), wxICON_ERROR);
+	wxMessageBox(wxT("A fatal error has occurred. RME will now close."), wxT("Fatal Error"), wxICON_ERROR);
 }
