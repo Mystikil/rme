@@ -13,14 +13,12 @@ Application::~Application() {}
 bool Application::OnInit() {
     wxInitAllImageHandlers();
 
-    g_settings.load();  // FIXED: Method name corrected
+    g_settings.load();
 
-    // Setup main GUI frame
-    GUI::GetInstance()->LoadMainWindow();
+    g_gui.LoadMainWindow();
 
-    // Show welcome dialog with icon (required by header)
     wxBitmap icon(wxArtProvider::GetBitmap(wxART_INFORMATION, wxART_OTHER, wxSize(32, 32)));
-    g_gui.ShowWelcomeDialog(icon);  // FIXED: Pass required wxBitmap argument
+    g_gui.ShowWelcomeDialog(icon);
 
     return true;
 }
@@ -30,24 +28,25 @@ void Application::OnEventLoopEnter(wxEventLoopBase* loop) {
 }
 
 void Application::MacOpenFiles(const wxArrayString& fileNames) {
-    // Mac-specific file open logic here if needed
+    // Mac-specific file open logic if needed
 }
 
 int Application::OnExit() {
-    g_settings.save();  // FIXED: Method name corrected
+    g_settings.save();
     return wxApp::OnExit();
 }
 
 void Application::Unload() {
-    g_gui.GetMainFrame()->Close();  // FIXED: GUI::Close() doesn't exist — use wxFrame::Close()
+    if (g_gui.main_frame) {
+        g_gui.main_frame->Close();
+    }
 }
 
 void Application::FixVersionDiscrapencies() {
-    // Optional: fix logic
+    // Fix logic here
 }
 
 bool Application::ParseCommandLineMap(wxString& fileName) {
-    // Optional: parse map logic
     return false;
 }
 
