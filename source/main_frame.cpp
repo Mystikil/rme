@@ -5,6 +5,8 @@
 #include "editor.h"
 #include "world_generator_dialog.h"
 #include "world_generator.h"
+#include "gui.h"
+
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_TOOL(TOOLBAR_WORLDGENERATOR, MainFrame::OnWorldGenerator)
